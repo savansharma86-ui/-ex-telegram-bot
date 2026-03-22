@@ -1,4 +1,5 @@
 import logging
+import os
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -7,7 +8,10 @@ from telegram.ext import (
     ChatJoinRequestHandler,
 )
 
-import os
+# Logging
+logging.basicConfig(level=logging.INFO)
+
+# Token from Render ENV
 TOKEN = os.getenv("TOKEN")
 
 WELCOME_MSG = """Hey! Welcome ❤️🫶🏼
@@ -19,20 +23,18 @@ https://t.me/+Pi6GvsfYlFUzZTg1
 Updates miss mat karna! 🔥
 """
 
-logging.basicConfig(level=logging.INFO)
-
-# Store users for broadcast
+# Store users
 users = set()
 
-# /start → show all commands
+# /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users.add(update.effective_user.id)
     await update.message.reply_text(
         "🤖 *Auto Approve Bot*\n\n"
-        "Available Commands:\n"
+        "Commands:\n"
         "/approve - Accept all pending requests\n"
-        "/broadcast <message> - Send message to all users\n"
-        "/help - Show commands\n",
+        "/broadcast <msg> - Send to all users\n"
+        "/help - Show commands",
         parse_mode="Markdown"
     )
 
@@ -40,7 +42,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await start(update, context)
 
-# When join request comes → instant DM
+# Join request handler
 async def join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     req = update.chat_join_request
     user = req.from_user
@@ -49,12 +51,11 @@ async def join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except:
         pass
 
-# /approve → accept all pending
+# Approve all requests
 async def approve_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     bot = context.bot
     approved = 0
-    rejected = 0
 
     try:
         requests = await bot.get_chat_join_requests(chat_id)
@@ -64,29 +65,24 @@ async def approve_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await bot.approve_chat_join_request(chat_id, r.user_chat_id)
                 approved += 1
             except:
-                rejected += 1
+                pass
 
         await bot.send_message(
             chat_id=chat_id,
-            text=(
-                f"✅ ALL REQUEST APPROVED DONE ✓\n\n"
-                f"👍 Approved: {approved}\n"
-                f"❌ Rejected: {rejected}\n\n"
-                f"RG - @SAVAN_JOD / @UR_SAVAN\n\n"
-                f"Feedback dena na bhoolen ❤️"
-            )
+            text=f"✅ Approved: {approved}"
         )
+
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
 
-# Check admin
+# Admin check
 async def is_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_member = await context.bot.get_chat_member(
         update.effective_chat.id, update.effective_user.id
     )
     return chat_member.status in ["administrator", "creator"]
 
-# /broadcast → admin only
+# Broadcast
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await is_admin(update, context):
         return
@@ -105,8 +101,9 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             pass
 
-    await update.message.reply_text(f"📢 Broadcast sent to {sent} users")
+    await update.message.reply_text(f"📢 Sent to {sent} users")
 
+# Main
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
 
@@ -121,7 +118,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    git reset --hard HEAD~1
-git push origin -f
-
-  
+    
