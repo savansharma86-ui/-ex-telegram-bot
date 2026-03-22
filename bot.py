@@ -7,7 +7,8 @@ from telegram.ext import (
     ChatJoinRequestHandler,
 )
 
-TOKEN = "8578283267:AAFYsrOZSYd1A2lzRxbey7gSETR5m_Nkt1I"
+import os
+TOKEN = os.getenv("TOKEN")
 
 WELCOME_MSG = """Hey! Welcome ❤️🫶🏼
 Aapki join request approve ho jyegi soon ✅
