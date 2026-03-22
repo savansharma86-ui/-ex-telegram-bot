@@ -121,4 +121,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+    git reset --hard HEAD~1
+git push origin -f
+
   
